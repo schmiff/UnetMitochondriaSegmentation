@@ -1,29 +1,26 @@
-# taken from
-# https://github.com/rohan-paul/MachineLearning-DeepLearning-Code-for-my-YouTube-Channel/blob/master/Computer_Vision/Unet-Brain-MRI-Segmentation-Tensorflow-Keras/utils.py
-from keras import backend as K
-# Global Parameter
-smooth = 100
-# 2 * Area of Overlap / Total Pixel of images
-def dice_coefficient(y_true , y_pred, smooth=smooth):
-    y_true_flatten = K.flatten(y_true)
-    y_pred_flatten = K.flatten(y_pred)
+from keras.preprocessing.image import ImageDataGenerator
+from numpy import ndarray
 
-    intersection = K.sum(y_true_flatten * y_pred_flatten)
-    union = K.sum(y_true_flatten, ) + K.sum(y_pred_flatten)
+def createImageSegmentationGenerator(images: ndarray, masks: ndarray, augmentation_dict: dict, batch_size: int):
+        """
+        Normalize images and encode all existing mask pixel values to 0 and 1 with a treshhold of 0.5
+        """
+        image_gen = ImageDataGenerator(**augmentation_dict)
+        mask_gen = ImageDataGenerator(**augmentation_dict)
 
-    return (2 * intersection + smooth) / (union + smooth)
+        image_gen = image_gen.flow(images, batch_size=batch_size)
+        mask_gen = mask_gen.flow(masks, batch_size=batch_size)
 
-def dice_coefficients_loss(y_true, y_pred, smooth=smooth):
-    return -dice_coefficient(y_true, y_pred, smooth)
+        return_gen = zip(image_gen, mask_gen)
 
-# Area of Overlap / Area of Union
-def iou(y_true, y_pred, smooth=smooth):
-    intersection = K.sum(y_true*y_pred)
-    sum = K.sum(y_true+y_pred)
-    iou = (intersection + smooth) / (sum - intersection + smooth)
-    return iou
-#
-def jaccard_distance(y_true, y_pred):
-    y_true_flatten = K.flatten(y_true)
-    y_pred_flatten = K.flatten(y_pred)
-    return -iou(y_true_flatten, y_pred_flatten)
+        for (img, mask) in return_gen:
+                img, mask = normalize_and_diagnose(img, mask)
+                yield img, mask
+
+
+def normalize_and_diagnose(img, mask):
+    img = img / 255
+    mask = mask / 255
+    mask[mask > 0.5] = 1
+    mask[mask <= 0.5] = 0
+    return img, mask
