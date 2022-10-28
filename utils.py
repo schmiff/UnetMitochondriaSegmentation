@@ -8,8 +8,8 @@ def createImageSegmentationGenerator(images: ndarray, masks: ndarray, augmentati
         image_gen = ImageDataGenerator(**augmentation_dict)
         mask_gen = ImageDataGenerator(**augmentation_dict)
 
-        image_gen = image_gen.flow(images, batch_size=batch_size)
-        mask_gen = mask_gen.flow(masks, batch_size=batch_size)
+        image_gen = image_gen.flow(images, batch_size=batch_size, shuffle=False)
+        mask_gen = mask_gen.flow(masks, batch_size=batch_size, shuffle=False)
 
         return_gen = zip(image_gen, mask_gen)
 
