@@ -5,8 +5,8 @@ def createImageSegmentationGenerator(images: ndarray, masks: ndarray, augmentati
         """
         Normalize images and encode all existing mask pixel values to 0 and 1 with a treshhold of 0.5
         """
-        image_gen = ImageDataGenerator(**augmentation_dict)
-        mask_gen = ImageDataGenerator(**augmentation_dict)
+        image_gen = ImageDataGenerator()
+        mask_gen = ImageDataGenerator()
 
         image_gen = image_gen.flow(images, batch_size=batch_size, shuffle=False)
         mask_gen = mask_gen.flow(masks, batch_size=batch_size, shuffle=False)
@@ -19,7 +19,6 @@ def createImageSegmentationGenerator(images: ndarray, masks: ndarray, augmentati
 
 
 def normalize_and_diagnose(img, mask):
-    img = img / 255
     mask = mask / 255
     mask[mask > 0.5] = 1
     mask[mask <= 0.5] = 0
